@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendations</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .movie-card {
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #9d0e0e;
+            border-radius: 8px;
+            text-align: center;
+            width: 200px;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
+        }
+        .movie-poster {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        .movie-title {
+            font-size: 1.1em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        /* Details section to show by default */
+        .movie-info {
+            font-size: 0.9em;
+            color: #555;
+        }
+        /* Overview section hidden initially */
+        .movie-overview {
+            display: none;
+            font-size: 0.9em;
+            color: #555;
+            padding-top: 10px;
+        }
+        /* Show the overview on hover */
+        .movie-card:hover .movie-info {
+            display: none;
+        }
+        .movie-card:hover .movie-overview {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-4">Movies Recommendations</h1>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-6">
+                <input type="text" id="movieTitle" class="form-control" placeholder="Enter a movie title or genre">
+                <button onclick="fetchRecommendations()" class="btn btn-primary btn-block mt-3">Get Recommendations</button>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center mt-4" id="results"></div>
+    </div>
+
+    <script>
+        // Function to trigger the search when the Enter key is pressed
+        document.getElementById('movieTitle').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                fetchRecommendations();
+            }
+        });
+
+        async function fetchRecommendations() {
+            const movieTitle = document.getElementById("movieTitle").value;
+            const response = await fetch(`/recommendations?movie=${encodeURIComponent(movieTitle)}`);
+            const movies = await response.json();
+    
+            document.getElementById("results").innerHTML = '';
+            if (movies.length === 0) {
+                document.getElementById("results").innerHTML = '<p class="text-center">No recommendations found.</p>';
+            } else {
+                // Limit to displaying only 9 movies
+                movies.slice(0, 9).forEach(movie => {
+                    const movieCard = document.createElement('div');
+                    movieCard.classList.add('col-md-3', 'movie-card');
+                    movieCard.innerHTML = `
+                        <img src="${movie.Poster_Link}" alt="${movie.Series_Title}" class="movie-poster">
+                        <div class="movie-title">${movie.Series_Title}</div>
+                        <div class="movie-info">
+                            <div class="movie-details">Genre: ${movie.Genre}</div>
+                            <div class="movie-details">Director: ${movie.Director}</div>
+                            <div class="movie-details">IMDb Rating: ${movie.IMDB_Rating}</div>
+                            <div class="movie-details">Year: ${movie.Released_Year}</div>
+                            <div class="movie-details">Actors: ${movie.Star1}, ${movie.Star2}</div>
+                        </div>
+                        <div class="movie-overview">Overview: ${movie.Overview}</div>
+                    `;
+                    document.getElementById("results").appendChild(movieCard);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
